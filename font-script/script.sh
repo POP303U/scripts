@@ -39,7 +39,7 @@ else
     exit 0
 fi
 
-pacman -Sy noto-fonts-cjk noto-fonts-emoji noto-fonts ttf-dejavu ttf-liberation ttf-linux-libertine ttf-inconsolata --noconfirm
+pacman -Sy noto-fonts-cjk noto-fonts-emoji noto-fonts ttf-dejavu ttf-liberation ttf-linux-libertine ttf-inconsolata noto-fonts-emoji --noconfirm
 
 ln -s /etc/fonts/conf.avail/70-no-bitmaps.conf /etc/fonts/conf.d
 ln -s /etc/fonts/conf.avail/10-sub-pixel-rgb.conf /etc/fonts/conf.d
