@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+# this vulgar, horrible code can be made better but 'it just works'
+printf "Extract Metadata (y/n): \n"
+read meta_flag
+
+if [ "$meta_flat" == "y" ] || [ "$path" == "" ]; then
+    printf "Using metadata for song...\n"
+
+    printf "Enter path (or default /mnt/sdc1/Music): \n"
+    read path
+
+    if [ "$path" == "default" ] || [ "$path" == "" ]; then
+        path="/mnt/sdc1/Music"
+    fi
+
+    cd $path 
+        
+    printf "Enter youtube url: (example: 'https://youtu.be/uRSAatLI2QY'): \n"
+    read url
+
+    printf "Is your video in a playlist (y/n): \n"
+    read playlist
+
+    if [ "$playlist" == "y" ] || [ "$playlist" == "" ]; then
+        playlist="--no-playlist"
+    else 
+        playlist=""
+    fi
+
+    yt-dlp "$playlist" --add-metadata -x "$url"
+    exit 0
+else
+    printf "\nEnter song name: (example: 'Alan Aztec - Disco Panzer (feat. R5on11c)')"
+    read song_name
+
+    printf "\nEnter youtube url: (example: 'https://youtu.be/uRSAatLI2QY?list=PLI7GiZMfTF51C6Pj2atVhhlPSKKQFIbpY')"
+    read url
+
+    printf "\nEnter path (or default /mnt/sdc1/Music): "
+    read path
+
+    if [ "$path" == "default" ] || [ "$path" == "" ]; then
+        path="/mnt/sdc1/Music"
+    fi
+
+    yt-dlp -o "$path/$song_name" -x "$url"
+    exit 0
+fi
+
+
