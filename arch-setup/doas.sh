@@ -1,8 +1,8 @@
 # WILL REMOVE SUDO RUN AT YOUR OWN RISK
 sudo pacman -S opendoas
-doas pacman -R sudo
-doas chown -c root:root /etc/doas.conf
-doas chmod -c 0400 /etc/doas.conf
+sudo pacman -R sudo
+sudo chown -c root:root /etc/doas.conf
+sudo chmod -c 0400 /etc/doas.conf
 
 # Replace sudo with doas
 ln -s $(which doas) /usr/bin/sudo
