@@ -47,7 +47,7 @@ function check_root() {
 }
 
 function select_theme() {
-    themes=('Vimix' 'Cyberpunk' 'Shodan' 'fallout' 'CyberRe' 'minegrub-theme' 'Quit')
+    themes=('Vimix' 'Cyberpunk' 'Shodan' 'RuanMei' 'fallout' 'CyberRe' 'minegrub-theme' 'Quit')
 
     PS3=$(echo_prompt '\nChoose The Theme You Want: ')
     select THEME_NAME in "${themes[@]}"; do
@@ -60,6 +60,9 @@ function select_theme() {
                 break;;
             'Shodan')
                 splash 'Installing Shodan Theme...'
+                break;;
+            'RuanMei')
+                splash 'Installing RuanMei Theme...'
                 break;;
             'fallout')
                 splash 'Installing fallout Theme...'
@@ -108,7 +111,9 @@ function select_theme() {
             '60')
                 echo_info 'Setting timeout to 60 Seconds'
                 break;;
-            *) echo_warning "invalid option \"${REPLY}\"";;
+             *) echo_warning "invalid option \"${REPLY}\""
+                echo_warning "safely exiting..."
+                exit 0;;
         esac
     done
 }
