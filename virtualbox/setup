@@ -1,0 +1,11 @@
+#!/bin/sh
+
+sudo pacman -S virtualbox virtualbox-guest-iso
+sudo gpasswd -a $USER vboxusers
+sudo modprobe vboxdrv
+paru -Syy
+paru -S virtualbox-ext-oracle
+sudo systemctl enable vboxweb.service
+sudo systemctl start vboxweb.service
+lsmod | grep -i vbox
+
