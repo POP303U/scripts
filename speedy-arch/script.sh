@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 echo ""
 echo "#######################"
 echo "# Setting up Drive... #"
@@ -12,36 +10,34 @@ read DRIVE
 echo "Wiping the drive $DRIVE..."
 dd if=/dev/zero of=$DRIVE bs=1M count=100
 
+# <- GPT SIGNATURE ->
 echo "Creating GPT signature on $DRIVE..."
 parted -s $DRIVE mklabel gpt
 
+# <- EFI ->
 echo "Creating a 1G partition on $DRIVE..."
-parted -s $DRIVE mkpart primary 0GB 1GB
+parted -s $DRIVE mkpart primary 0GB 1GiB
+EFI_PART="${DRIVE}1"
 
+# <- SWAP ->
 echo "Creating a 4G partition on $DRIVE..."
-parted -s $DRIVE mkpart primary 1GB 5GB
+parted -s $DRIVE mkpart primary 1GiB 5GiB
+SWAP_PART="${DRIVE}2"
 
+# <- ROOT ->
 echo "Creating a partition with the rest of the disk on $DRIVE..."
-parted -s $DRIVE mkpart primary 5GB 100%
+parted -s $DRIVE mkpart primary 5GiB 100%
+ROOT_PART="${DRIVE}3"
 
 # Display partition table
 echo "Partition table for $DRIVE:"
 parted $DRIVE print
-exit 0
-#printf "Please enter EFI partition: (example /dev/sda1 or /dev/nvme0n1p1): "
-#read EFI_PART
-#printf "Please enter SWAP partition: (example /dev/sda2 or /dev/nvme0n1p2): "
-#read SWAP_PART
-#printf "Please enter Root(/) partition: (example /dev/sda3 or /dev/nvme0n1p3): "
-read ROOT_PART
-echo ""
 
 echo ""
 echo "############################"
 echo "# Setting up Filesystem... #"
 echo "############################"
-echo "Choose filesystem for Drive: \
-
+echo "Choose filesystem for Drive:
     1. xfs
     2. ext4
     3. f2fs
@@ -62,14 +58,6 @@ read USERNAME
 printf "Please enter your users password: "
 read USER_PASSWD
 
-#echo "EFI_PART: ${EFI_PART}"
-#echo "SWAP_PART: ${SWAP_PART}"
-#echo "ROOT_PART: ${ROOT_PART}"
-#echo "DRIVE_FS: ${DRIVE_FS}"
-#echo "ROOT_PASSWD: ${ROOT_PASSWD}"
-#echo "USERNAME: ${USERNAME}"
-#echo "USER_PASSWD: ${USER_PASSWD}"
-
 echo "#######################"
 echo "# Formatting Drive... #"
 echo "#######################"
@@ -84,13 +72,13 @@ case "$DRIVE_FS" in
         mkfs.xfs -f "${ROOT_PART}"
         ;;
     2)
-        mkfs.ext4 "${ROOT_PART}"
+        mkfs.ext4 -f "${ROOT_PART}"
         ;;
     3)
-        mkfs.f2fs "${ROOT_PART}"
+        mkfs.f2fs -f "${ROOT_PART}"
         ;;
     4)
-        mkfs.btrfs "${ROOT_PART}"
+        mkfs.btrfs -f "${ROOT_PART}"
         ;;
     *)
         echo "Invalid filesystem type selected! value: $DRIVE_FS"
@@ -104,13 +92,45 @@ echo "# Mounting Partitions... #"
 echo "##########################"
 echo ""
 
-#mkdir -p /mnt/boot/efi
-#mount "${ROOT_PART}" /mnt
-#mount "${EFI_PART}" /mnt/boot/efi
+MOUNT_DIR_ROOT="/mnt/arch"
+MOUNT_DIR_EFI="/mnt/arch/boot/efi"
+
+if [ ! -d "$MOUNT_DIR_ROOT" ]; then
+    mkdir -p "$MOUNT_DIR_ROOT"
+fi
+
+if [ ! -d "$MOUNT_DIR_EFI" ]; then
+    mkdir -p "$MOUNT_DIR_EFI"
+fi
+
+# Mount the drive
+mount "$ROOT_PART" "$MOUNT_DIR_ROOT"
+mount "$EFI_PART" "$MOUNT_DIR_EFI"
+
+# Check if the mount was successful
+if [ $? -eq 0 ]; then
+    echo "Drive mounted successfully"
+else
+    echo "Failed to mount the drive"
+fi
 
 echo "#--------------------------------------------#"
 echo "~- Installing Arch Linux base on Main Drive -~"
 echo "#--------------------------------------------#"
-#pacstrap /mnt base base-devel linux linux-firmware --noconfirm --needed
+
+pacstrap "${MOUNT_DIR_ROOT}" base base-devel linux linux-firmware --noconfirm --needed
+
+#DEBUG
+#echo "EFI_PART: ${EFI_PART}"
+#echo "SWAP_PART: ${SWAP_PART}"
+#echo "ROOT_PART: ${ROOT_PART}"
+#echo "DRIVE_FS: ${DRIVE_FS}"
+#echo "ROOT_PASSWD: ${ROOT_PASSWD}"
+#echo "USERNAME: ${USERNAME}"
+#echo "USER_PASSWD: ${USER_PASSWD}"
 
 #sudo pacman -Sy p7zip unrar tar rsync github-cli git neofetch htop exfat-utils fuse-exfat ntfs-3g flac jasper aria2 curl wget jp2a less --noconfirm
+while true;
+do
+    sleep 1
+done
