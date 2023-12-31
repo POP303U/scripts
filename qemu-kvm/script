@@ -1,0 +1,49 @@
+#!/usr/bin/env sh
+
+sudo pacman -S virt-manager virt-viewer qemu edk2-ovmf vde2 ebtables dnsmasq bridge-utils openbsd-netcat libguestfs
+PARU=/sbin/paru
+YAY=/sbin/yay
+
+if [ -f $PARU || -f $YAY ]; then
+    if [ -f $PARU ]; then
+        paru -S qemu-full
+    else
+        yay -S qemu-full
+    fi
+fi
+
+sudo systemctl enable libvirtd.service
+sudo systemctl start libvirtd.service
+
+rm -f default.xml
+echo "<network>
+  <name>default</name>
+  <bridge name='virbr0'/>
+  <forward/>
+  <ip address='192.168.122.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.122.2' end='192.168.122.254'/>
+    </dhcp>
+  </ip>
+</network>" >> default.xml
+
+virsh net-define default.xml
+virsh net-start default
+virsh net-autostart default
+
+rm -f /etc/libvirt/libvirtd.conf
+echo 'unix_sock_group = "libvirt"
+unix_sock_ro_perms = "0777"
+unix_sock_rw_perms = "0770"' >> /etc/libvirt/libvirtd.conf
+
+usermod -a -G kvm $(whoami)
+usermod -a -G libvirt $(whoami)
+gpasswd -a "$USER" libvirt
+newgrp libvirt
+
+sudo modprobe -r kvm_intel
+sudo modprobe kvm_intel nested=1
+echo "options kvm-intel nested=1" | tee /etc/modprobe.d/kvm-intel.conf
+
+systool -m kvm_intel -v | grep nested
+cat /sys/module/kvm_intel/parameters/nested
